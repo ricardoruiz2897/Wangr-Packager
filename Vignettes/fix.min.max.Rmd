@@ -1,0 +1,94 @@
+---
+title: "fix.min.max"
+author: "Nick C"
+date: "4/11/2018"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{fix.min.max}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Fix.min.max
+
+Fix.min.max is a function developed to set a minimum and maximum value for a list of numbers or dates. Since dates are stored as integer values in R it requires no extra formatting to handle dates rather than regular number formats.
+
+Fix.min.max requires 5 arguements to run:
+
+* Column: the column you want to alter data in.
+* Min: the minimum value you want to be allowed in your column (if left NA will not alter minimum).
+* Max: the maximum value you want to be allowed in your column (if left NA will not alter maximum).
+* Change.min.to: the value you want to change to for the cells that are not greater than the minimum provided (defaults to NA).
+* Change.max.to: the value you want to change to for the cells that are less than the maximum provided (defaults to NA).
+
+```{r Create Test Df, include=FALSE}
+library(tidyverse)
+library(nycflights13)
+library(lubridate)
+
+test.df <- flights %>% 
+  mutate(date = make_date(year, month, day)) %>% 
+  group_by(date) %>% 
+  summarise(n = n())
+
+fix.min.max <- function(column, min = NA, max = NA, change.min.to = NA, change.max.to = NA){
+  
+  # Get the class type of the data stored in column.
+  type <- class(column[[1]])
+  
+  # If min is not NA, change all values below min in column to change.min.to.
+  if(!is.na(min)){
+    column <-  ifelse(column < min, change.min.to, column)
+  }
+  
+  # If max is not NA, change all values above max in column to change.max.to.
+  if(!is.na(max)){
+    column <-  ifelse(column > max, change.max.to, column)
+  }
+  
+  # If the type of data in the list before was a date, change it to a date.
+  if(type == "Date"){
+    column <-  as.Date(column, origin="1970-01-01")
+  }
+  
+  return(column)
+  
+}
+```
+
+## Using fix.min.max on Numbers
+
+Fix.min.max is designed to handle a single column of unlisted data so it must be fed a single column to alter. For our example we will use a dataframe filled with dates assigned a number "n". Dates were pulled from the nycflights13 library.
+
+```{r Test df, echo=FALSE}
+test.df
+```
+
+To alter the "n" column we would format the fix.min.max function to feed in the "n" column (setting the min = 900 and the max = 932) like so:
+
+```{r Fix.min.max, echo=TRUE}
+test.df$n <- fix.min.max(test.df$n, 900, 932, NA, NA)
+
+```
+
+```{r Altered df, echo=FALSE}
+test.df
+```
+
+
+##Using Fix.min.max on Dates
+
+As mentioned before you can just as easily use fix.min.max to alter dates. Using the same format you just need to input your dates. Here I use the library "lubridate" to easily provide date inputs with a minimum of 2013/01/04 to change to NA and a maximum of 2014/01/01.
+
+```{r}
+test.df$date <- fix.min.max(test.df$date, make_date(2013, 01, 04), make_date(2014, 01, 01), NA, NA)
+
+```
+
+```{r echo=FALSE}
+test.df
+```

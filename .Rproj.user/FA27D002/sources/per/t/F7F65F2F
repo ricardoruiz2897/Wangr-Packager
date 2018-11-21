@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1537972753568.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "485155536",
+    "id" : "F7F65F2F",
+    "lastKnownWriteTime" : 1537976385,
+    "last_content_update" : 1537976385,
+    "path" : "~/Dropbox (Wang Research Team)/Wang Research Team Team Folder/wangr/R/scatter.plot.R",
+    "project_path" : "R/scatter.plot.R",
+    "properties" : {
+        "cursorPosition" : "37,0",
+        "scrollLine" : "0"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

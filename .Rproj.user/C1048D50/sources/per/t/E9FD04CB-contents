@@ -1,0 +1,44 @@
+#'Density Plot
+#'
+#'@description
+#'This function takes a list of categorical predictors and a list of continuous outcomes to produce density plots.
+#'
+#'@Usage
+#'density.plot(.dat, cont.out, cat.pre, alpha=.5, filename)
+#'
+#'@param dat Dataframe to take info from.
+#'@param cont.out List of continuous outcomes
+#'@param cat.pre List of categorical Predictors
+#'@param alpha
+#'@param filename Name of the file
+#'
+#'@return Saves density plots on a pdf with the given filename
+#'
+#'@examples
+#'density.plot(data=df, cont.out = continous.outcomes, cat.pre = categorical.predictors, alpha=1, filename="Density Plot")
+#'
+density.plot <- function(dat, cont.out, cat.pre, alpha=.5, filename){
+  alph <- alpha
+
+  if(missing(dat)){
+    print("Please supply data")
+    return()
+  }
+
+  if(class(dat)!="data.frame"){
+    print("Coercing data to a dataframe")
+    dat <- as.data.frame(dat)
+  }
+
+  pdf(paste0(filename,".pdf"))
+  for(i in 1:length(cat.pre)){
+    for(j in 1:length(cont.out)){
+
+      print(qplot(dat[,cont.out[j]], data=dat, geom="density", fill=dat[,cat.pre[i]], alpha=I(alph),
+                  main=paste(colnames(dat)[cont.out[j]],"by",colnames(dat)[cat.pre[i]]),
+                  xlab=colnames(dat)[cont.out[j]], ylab="Density")
+            + guides(fill=guide_legend(title=colnames(dat)[cat.pre[i]])))
+    }
+  }
+  dev.off()
+}

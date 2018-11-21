@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1525707578650.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2461003942",
+    "id" : "FC9EB561",
+    "lastKnownWriteTime" : 1525708145,
+    "last_content_update" : 1525708145327,
+    "path" : "~/Dropbox (Wang Research Team)/Wang Research Team Team Folder/wangr/R/get.wage.data.R",
+    "project_path" : "R/get.wage.data.R",
+    "properties" : {
+        "cursorPosition" : "28,24",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

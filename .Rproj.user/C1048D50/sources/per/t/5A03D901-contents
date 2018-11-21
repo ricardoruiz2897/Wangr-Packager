@@ -1,0 +1,173 @@
+# "Better Than" Chesnut's Figures
+# Sam, Nick, and Ricardo
+
+library(ggplot2)
+library(car)
+library(ggthemes)
+
+load("report/plots/tabe.vrbls.rdata")
+setwd("Report/plots")
+
+mess <- tabe.vrbls
+
+
+names(mess)
+# [1] "Recd_GED"        "GAIN_CO"         "GAIN_RD"         "GAIN_AR"         "GAIN_WT"         "Inmate_Type"
+# [7] "Sex"             "Race"            "Age_at_Entry"    "Sentence_Length" "year_at_entry"   "Complab_Hrs_ttl"
+#[13] "ESL_Hrs_ttl"     "SPED_Hrs_ttl"    "Title_1_Hrs_ttl" "Voc_Hrs_ttl"     "CIP_Hrs_ttl"     "Changes_Hrs_ttl"
+#[19] "INIT_CO"         "INIT_RD"         "INIT_AR"         "INIT_WT"
+
+
+summary(mess)
+
+mess$Recd_GED <- car::recode(mess$Recd_GED,"0='No GED';1='Received GED';else=NA")
+mess$Recd_GED <- factor(mess$Recd_GED)
+
+mess$Sex <- car::recode(mess$Sex,"0='Female';1='Male';else=NA")
+mess$Sex <- factor(mess$Sex)
+
+mess$Race <- car::recode(mess$Race,"1='American Indian';2='Asian';3='Black';4='Hispanic';5='Other';6='White';else=NA")
+mess$Race <- factor(mess$Race)
+
+names(mess)
+glimpse(mess)
+str(mess)
+
+
+cont.out <- c(2,3)
+cont.pre <- c(9,10,12)
+
+
+cont.out <- c(2,3,4,5)
+cat.out <- c(1)
+
+cont.pre <- c(9,10,12:22)
+cat.pre <- c(6,7,8,11)
+
+
+table(mess$Sex)
+
+colnames(mess) <- c("Received GED","Composite TABE Gains","Reading TABE Gains","Math TABE Gains","Language TABE Gains","Inmate Type","Gender","Race",
+                   "Age at Entry","Sentence Length","Cohort","Computer Lab Hours","ESL Hours","Special Ed Hours","Title 1 Hours",
+                   "Vocational Hours","Cognitive Intervention Hours","CHANGES Hours","Initial TABE Composite","Initial TABE Reading",
+                   "Initial TABE Math","Initial TABE Langauge")
+
+
+wangr::density.plot(dat=mess, cont.out = cont.out, cat.pre = cat.pre, alpha = .5, filename = "Test")
+
+density.plot(dat = mess, cont.out=cont.out, cat.pre=cat.pre, alpha=.5, filename="MESS.dense")
+
+wangr::box.plot(dat=mess, cat.out=cat.out, cont.pre=cont.pre, alpha=1.0, jitter= F, filename ="MESS1.box")
+
+box.plot(dat=mess, cat.out=cat.out, cont.pre=cont.pre, alpha=.5, jitter= T, filename ="MESS.box")
+
+wangr::scatter.plot(dat=mess, cont.out=cont.out, cat.pre=cat.pre, cont.pre=cont.pre, alpha = .5, filename="MESS.scatter")
+
+scatter.plot(dat=mess, cont.out=cont.out, cat.pre=cat.pre, cont.pre=cont.pre, alpha = .5, filename="MESS.scatter")
+
+class(mess)
+mess <- as.data.frame(mess)
+
+
+
+
+# Functions ------------
+
+density.plot <- function(dat, cont.out, cat.pre, alpha=.5, filename){
+  alph <- alpha
+
+  if(missing(dat)){
+    print("Please supply data")
+    return()
+    }
+
+  if(class(dat)!="data.frame"){
+    print("Coercing data to a dataframe")
+    dat <- as.data.frame(dat)
+  }
+
+  pdf(paste0(filename,".pdf"))
+  for(i in 1:length(cat.pre)){
+    for(j in 1:length(cont.out)){
+
+        print(qplot(dat[,cont.out[j]], data=dat, geom="density", fill=dat[,cat.pre[i]], alpha=I(alph),
+                    main=paste(colnames(dat)[cont.out[j]],"by",colnames(dat)[cat.pre[i]]),
+                    xlab=colnames(dat)[cont.out[j]], ylab="Density")
+                    + guides(fill=guide_legend(title=colnames(dat)[cat.pre[i]])))
+    }
+  }
+  dev.off()
+}
+
+
+
+box.plot <- function(dat, cat.out, cont.pre, alpha=.5, jitter=F, filename){
+  alph <- alpha
+
+  if(missing(dat))
+    print("Please supply data")
+
+  if(class(dat)!="data.frame"){
+    print("Coercing data to a dataframe")
+    dat <- as.data.frame(dat)
+  }
+
+  if(jitter==T){
+    geomplot <- c("jitter","boxplot")
+  } else{
+    geomplot <- "boxplot"
+  }
+
+  pdf(paste0(filename,".pdf"))
+  for(i in 1:length(cat.out)){
+    for(j in 1:length(cont.pre)){
+
+        print(qplot(dat[,cat.out[i]],dat[,cont.pre[j]],data=dat,
+                    geom=geomplot,fill=dat[,cat.out[i]],alpha=I(alph),
+                    main=paste(colnames(dat)[cat.out[i]],"by",colnames(dat)[cont.pre[j]]),
+                    xlab="",ylab=colnames(dat)[cont.pre[j]])
+                    + guides(fill=guide_legend(title=colnames(dat)[cat.out[i]])))
+
+
+    }
+  }
+  dev.off()
+}
+
+
+
+scatter.plot <- function(dat, cat.pre, cont.pre, cont.out, alpha=.5, filename){
+
+  alph <- alpha
+
+  if(missing(dat))
+    print("Please supply data")
+
+  if(class(dat)!="data.frame"){
+    print("Coercing data to a dataframe")
+    dat <- as.data.frame(dat)
+  }
+
+  pdf(paste0(filename,".pdf"))
+  for(i in 1:length(cat.pre)){
+    for(j in 1:length(cont.pre)){
+      for(k in 1:length(cont.out)){
+
+          print(qplot(dat[,cont.out[k]],dat[,cont.pre[j]],
+                      data=dat,geom=c("point", "jitter", "smooth"),
+                      method="lm",formula=y~x,color=dat[,cat.pre[i]],fill=dat[,cat.pre[i]],alpha=I(alph),
+                      main=paste(colnames(dat)[cont.out[k]],"by\n",colnames(dat)[cont.pre[j]],
+                                 "\nCategorized by",colnames(dat)[cat.pre[i]]),
+                      xlab=colnames(dat)[cont.out[k]],ylab=colnames(dat)[cont.pre[j]]))
+                      + guide_legend(title = colnames(dat)[cont.out[k]])#,
+                      #+ guides(fill=guide_legend(title=colnames(dat)[cont.out[k]])))
+
+        print(paste("Category",i,"of",length(cat.pre),". Predictor",j,"of",length(cont.pre),". Outcome",k,"of",length(cont.out),"."))
+      }
+    }
+  }
+  dev.off()
+}
+
+
+

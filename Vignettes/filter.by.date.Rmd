@@ -1,0 +1,227 @@
+---
+title: "filter.by.date"
+author: "Nick C"
+date: "3/29/2018"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{filter.by.date}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Filter.by.date
+
+Filter.by.date is a function for handling comparison of dates within a data frame. It comes with 4 basic tasks designed for handling dates: first, last, cut, and interval. This vignette will focus on the interval arguement.
+
+## What Interval does
+
+When calling the filter.by.date function, using the interval arguement allows you to provide 2 dates for all other dates in a list-collumn to be compared against to find out if they are pre, during, or post the date interval.
+
+Calling the function requires 6 arguements:
+
+* task - 4 valid inputs first, last, cut, and interval.
+* listname - name of the internal list of dates that you are testing.
+* col.name - name of column containing lists of dates.
+* new.col.name - name of new column that will contain pre, post, and during. Defaults to "time.window".
+* date1 - earliest date you want tested.
+* date2 - last date of interval to be tested.
+
+
+## How your data should look
+
+Filter.by.date was designed to be used on list-columns so you have to make sure you are operating on a nested list.
+
+
+```{r Setting up Test Data Frame, include=FALSE}
+library(tidyverse)
+library(lubridate)
+library(nycflights13)
+
+
+daily <- flights %>% 
+  mutate(date = make_date(year, month, day)) %>% 
+  group_by(date) %>% 
+  summarise(n = n())
+daily
+
+daily$n <- daily$n%%8
+
+daily2 <- daily %>% 
+  group_by(n) %>% 
+  nest(.key = "date")
+daily2
+
+```
+
+A nested list in a tibble will display differently than a standard dataframe. Rather than showing the contents of the list column it will display the dimensions.
+
+```{r Display Test Frame, echo=FALSE}
+daily2
+
+```
+
+You can observe a single rows list column's contents by explicitly calling on that row's column. This will show the dates as dates rather than as the integer values you see in the nested list-column.
+
+```{r Display Tibble Row, echo=TRUE}
+daily2$date[[1]]
+```
+
+
+```{r, echo=FALSE}
+filter.by.date <- function(listname, task, col.name, new.col.name=NA, date1=NA, date2=NA){
+  
+  # find.min function -------------------------------------------------------
+  find.min <- function(nested.col, name){
+    to.return <- purrr::map(nested.col, ~ if(!is.null(.x)) return(min(.x[[name]])) else return(NULL))
+  return(to.return)
+  }
+
+
+
+  # find.max function -------------------------------------------------------
+  find.max <- function(nested.col, name){
+    to.return <- purrr::map(nested.col, ~ if(!is.null(.x)) return(max(.x[[name]])) else return(NULL))
+  return(to.return)
+  }
+
+
+
+  # Event Function ----------------------------------------------------------
+  add.event <- function(nested.col, col.name, new.col.name, event.date){
+    tmp5 <- function(date, event.date){
+    
+      if(is.na(date) || is.na(event.date)){
+        return(NA)
+      }
+    
+      if(date <= event.date){
+        return("pre")
+      }
+      else{
+        return("post")
+      }
+    }
+  
+    tmp4 <- function(tibble, event.date, col.name, new.col.name){
+      if(!is.null(tibble)){
+        tibble[[new.col.name]] <- unlist(purrr::map(tibble[[col.name]], tmp5, event.date))
+        return(tibble)
+      }
+      else{
+        return(NULL)
+      }
+    }
+  
+    if(is_vector(event.date) || is_list(event.date)){
+      to.return <- purrr::map2(nested.col, event.date, tmp4, col.name, new.col.name)
+    }
+    else{
+      to.return <- purrr::map(nested.col, tmp4, event.date, col.name, new.col.name)
+    }
+    return(to.return)
+  }
+
+
+
+  # Interval function -------------------------------------------------------
+  add.interval <- function(nested.col, col.name, new.col.name, event.date.beg, event.date.end){
+    tmp7 <- function(date, event.date.beg, event.date.end){
+      if(is.na(date) || is.na(event.date.beg) || is.na(event.date.end)){
+        return(NA)
+      }
+    
+      if(date < event.date.beg){
+        return("pre")
+      }
+      else if(date > event.date.end){
+        return("post")
+      }
+      else{
+        return("during")
+      }
+    }
+  
+    tmp6 <- function(tibble, col.name, new.col.name, event.date.beg, event.date.end){
+      if(!is.null(tibble)){
+        tibble[[new.col.name]] <- unlist(purrr::map(tibble[[col.name]], tmp7, event.date.beg, event.date.end))
+        return(tibble)
+      }
+      else{
+        return(NULL)
+      }
+    }
+  
+    if((is_vector(event.date.beg) || is_list(event.date.beg)) && (is_vector(event.date.end) || is_list(event.date.end))){
+      to.return <- purrr::pmap(list(nested.col, event.date.beg, event.date.end), function(a, b, c) tmp6(a, col.name, new.col.name, b, c))
+    }
+    else if(is_vector(event.date.beg) || is_list(event.date.beg)){
+      to.return <- purrr::pmap(list(nested.col, event.date.beg), function(a, b) tmp6(a, col.name, new.col.name, b, event.date.end))
+    }
+    else if(is_vector(event.date.end) || is_list(event.date.end)){
+      to.return <- purrr::pmap(list(nested.col, event.date.end), function(a, b) tmp6(a, col.name, new.col.name, event.date.beg, b))
+    }
+    else{
+      to.return <- purrr::map(nested.col, tmp6, col.name, new.col.name, event.date.beg, event.date.end)
+    }
+    return(to.return)
+  }
+
+
+  if(task == "first"){
+    return(find.min(listname, col.name))
+  }
+  else if(task == "last"){
+    return(find.max(listname, col.name))
+  }
+  else if(task == "cut"){
+    if(is.na(new.col.name) || is.na(date1)){
+      print("ERROR: cut requires new.col.name and date1.")
+    }
+    else{
+      return(add.event(listname, col.name, new.col.name, date1))
+    }
+  }
+  else if(task == "interval"){
+    if(is.na(new.col.name) || is.na(date1) || is.na(date2)){
+      print("ERROR: cut requires new.col.name, date1 and date2.")
+    }
+    else{
+      return(add.interval(listname, col.name, new.col.name, date1, date2))
+    }
+  }
+  else{
+    print("ERROR: task specified is not a valid task.")
+  }
+}
+```
+
+##Applying Filter.by.date
+
+To call filter.by.date use the following format. You create the new column while calling it by using df$newCol then assigning it to the filter.by.date interval function. Choose your earliest date as date 1 and your latest date as date2. Include the list column that you are pulling the dates from as the col.name arguement and you will be returned with a df having your previous columns as well as the new pre/post/during column.
+
+```{r}
+
+daily2$newCol <- filter.by.date(daily2$date, "interval", "date", new.col.name = "newCol", date1 = as.Date("2013-03-03"), date2 = as.Date("2013-05-05"))
+
+```
+
+The new data frame will have the extra collumn, but again it will look strange while looking at the overall dataframe.
+
+```{r}
+daily2
+```
+
+To observe a rows data you can call it directly like shown before.
+
+```{r}
+daily2$newCol[[3]]
+```
+
+
+
+
+
