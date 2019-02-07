@@ -14,7 +14,7 @@
 #'@return
 #'This function returns y-x
 #'
-#'@example
+#'@examples
 #'answer <- change.in.wages(5, 10)
 #'print(answer)
 #'

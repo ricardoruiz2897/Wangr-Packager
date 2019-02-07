@@ -16,7 +16,7 @@
 #'count which contains the number of times that the value of entry was found. Note that even if the
 #'same value was found multiple times in nested.column for one row in column, it will only count once.
 #'
-#'@example
+#'@examples
 #'
 #'data <- tibble(a=list(tibble(b=list(1, 2, 3, 3, 5)), tibble(b=list(1, 6, 3))))
 #'

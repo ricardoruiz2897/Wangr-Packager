@@ -31,11 +31,11 @@ rci <- function(data,
                 pretest,
                 posttest,
                 reliability,
-                increase=FALSE,
+                increase = FALSE,
                 name,
-                graph.title=NA,
-                plot.percentage=100,
-                categories = 7) {
+                graph.title = NA,
+                plot.percentage = 50,
+                categories = 3) {
 
 
   if(reliability < 0 | reliability > 1) {

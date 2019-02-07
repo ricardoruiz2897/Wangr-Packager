@@ -1,4 +1,10 @@
-#' tabe ef lvl
+#'TABE ef lvl
+#'
+#'@description
+#'This function creates grade-level groupings of the TABE for Windham School District use
+#'
+#'@Usage
+#'tabe.ef.lvl(df, col.names)
 #'
 #' @param df data frame
 #' @param col.names column name(s) of TABE grade equivalents
@@ -10,7 +16,8 @@
 #' @examples
 #' df <- df %>% tabe.ef.lvl(df, "read.ge")
 #'
-# 2018-04-18: Nick C.
+# 2018-11-26 Dr. Wang
+#     But still not working way I want it to
 
 tabe.ef.lvl <- function(df, col.names){
 

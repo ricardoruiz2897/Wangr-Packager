@@ -9,14 +9,15 @@
 #'@param dat Dataframe to take info from.
 #'@param cont.out List of continuous predictors.
 #'@param cat.pre List of categorical outcomes.
-#'@param alpha
-#'@param jitter Jitter Points (Logical)
+#'@param alpha Numeric value of jitter amount (between 0 and 1); Default = .5
+#'@param jitter Jitter Points (Logical); Default = F
 #'@param filename Name of the file.
+#'@param plot.percentage Percentage of points to plot (numeric value from 1-100); Default = 100
 #'
 #'@return Saves a box plot in working directory on a pdf with the given filename
 
 #'@examples
-#'box.plot(data=df, cont.out = continous.outcomes, cat.pre = categorical.predictors, alpha=1, jitter=F, filename="Density Plot")
+#'box.plot(dat = df, cont.out = continous.outcomes, cat.pre = categorical.predictors, alpha = 1, jitter = F, filename="Density Plot.pdf")
 
 box.plot <- function(dat, cat.out, cont.pre, alpha=.5, jitter=F, filename, plot.percentage = 100){
   alph <- alpha
